@@ -1,0 +1,142 @@
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.ServiceFabric.Data.Indexing.Test.Mocks;
+using Microsoft.ServiceFabric.Data.Indexing.Test.Models;
+
+namespace Microsoft.ServiceFabric.Data.Indexing.Test
+{
+	[TestClass]
+	public class FilterableIndexTests
+	{
+		private static readonly Random Random = new Random();
+
+		[TestMethod]
+		public async Task StringFilter_Add()
+		{
+			var stateManager = new MockReliableStateManager();
+			var dictionary = await stateManager.GetOrAddIndexedAsync("test",
+				new FilterableIndex<Guid, Person, string>("name", (k, p) => p.Name));
+
+			// Add person using normal IReliableDictionary APIs.  This should update the index as well.
+			var john = new Person { Name = "John" };
+			using (var tx = stateManager.CreateTransaction())
+			{
+				await dictionary.AddAsync(tx, john.Id, john);
+				await tx.CommitAsync();
+			}
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				// Search the index for this person's name.  This should return the person we added above.
+				var result = await dictionary.FilterAsync(tx, "name", "John");
+				Assert.AreEqual(1, result.Count());
+				Assert.AreEqual(john.Id, result.First().Key);
+				Assert.AreSame(john, result.First().Value);
+
+				// Search the index for the wrong name.  This should not return any results.
+				var nobody = await dictionary.FilterAsync(tx, "name", "Jane");
+				Assert.AreEqual(0, nobody.Count());
+
+				await tx.CommitAsync();
+			}
+		}
+
+		[TestMethod]
+		public async Task StringFilter_Remove()
+		{
+			var stateManager = new MockReliableStateManager();
+			var dictionary = await stateManager.GetOrAddIndexedAsync("test",
+				new FilterableIndex<Guid, Person, string>("name", (k, p) => p.Name));
+
+			// Add then remove person using normal IReliableDictionary APIs.  This should update the index as well.
+			var john = new Person { Name = "John" };
+			using (var tx = stateManager.CreateTransaction())
+			{
+				await dictionary.AddAsync(tx, john.Id, john);
+				var remove = await dictionary.TryRemoveAsync(tx, john.Id);
+				await tx.CommitAsync();
+
+				Assert.IsTrue(remove.HasValue);
+			}
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				// Search the index for this person's name.  This should not return the person above.
+				var result = await dictionary.FilterAsync(tx, "name", "John");
+				Assert.AreEqual(0, result.Count());
+
+				await tx.CommitAsync();
+			}
+		}
+
+
+		[TestMethod]
+		public async Task StringFilter_Update()
+		{
+			var stateManager = new MockReliableStateManager();
+			var dictionary = await stateManager.GetOrAddIndexedAsync("test",
+				new FilterableIndex<Guid, Person, string>("name", (k, p) => p.Name));
+
+			// Add then update person using normal IReliableDictionary APIs.  This should update the index as well.
+			var john = new Person { Name = "John" };
+			var jane = new Person { Name = "Jane" };
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				await dictionary.AddAsync(tx, john.Id, john);
+				await dictionary.SetAsync(tx, john.Id, jane);
+				await tx.CommitAsync();
+			}
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				// Search the index for John.  This should not return anything.
+				var result = await dictionary.FilterAsync(tx, "name", "John");
+				Assert.AreEqual(0, result.Count());
+
+				// Search the index for Jane.  This should return the Jane person.
+				result = await dictionary.FilterAsync(tx, "name", "Jane");
+				Assert.AreEqual(1, result.Count());
+				Assert.AreSame(jane, result.First().Value);
+
+				await tx.CommitAsync();
+			}
+		}
+
+		[TestMethod]
+		public async Task StringFilter_AddMultiple()
+		{
+			var stateManager = new MockReliableStateManager();
+			var dictionary = await stateManager.GetOrAddIndexedAsync("test",
+				new FilterableIndex<Guid, Person, string>("name", (k, p) => p.Name));
+
+			// Add person using normal IReliableDictionary APIs.  This should update the index as well.
+			var john1 = new Person { Name = "John", Age = 23 };
+			var john2 = new Person { Name = "John", Age = 35 };
+			using (var tx = stateManager.CreateTransaction())
+			{
+				await dictionary.AddAsync(tx, john1.Id, john1);
+				await dictionary.AddAsync(tx, john2.Id, john2);
+				await tx.CommitAsync();
+			}
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				// Search the index for this person's name.  This should return the people we added above.
+				var results = await dictionary.FilterAsync(tx, "name", "John");
+				Assert.AreEqual(2, results.Count());
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john1);
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john2);
+
+				// Search the index for the wrong name.  This should not return any results.
+				var nobody = await dictionary.FilterAsync(tx, "name", "Jane");
+				Assert.AreEqual(0, nobody.Count());
+
+				await tx.CommitAsync();
+			}
+		}
+
+	}
+}
