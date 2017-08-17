@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.ServiceFabric.Data.Indexing
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
 	public interface IIndexDefinition<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Data.Notifications;
 
-namespace Microsoft.ServiceFabric.Data.Indexing.Test.Mocks
+namespace Microsoft.ServiceFabric.Data.Mocks
 {
 	public sealed class MockReliableDictionary<TKey, TValue> : IReliableDictionary2<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>

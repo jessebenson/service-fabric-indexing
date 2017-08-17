@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.ServiceFabric.Data.Indexing.Test.Mocks
+namespace Microsoft.ServiceFabric.Data.Mocks
 {
 	public class MockTransaction : ITransaction
 	{

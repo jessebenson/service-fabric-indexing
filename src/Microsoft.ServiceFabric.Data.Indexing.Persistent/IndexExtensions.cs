@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Collections;
 
-namespace Microsoft.ServiceFabric.Data.Indexing
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
 	/// <summary>
 	/// Extension methods for IReliableStateManager to support automatic reverse indexing.

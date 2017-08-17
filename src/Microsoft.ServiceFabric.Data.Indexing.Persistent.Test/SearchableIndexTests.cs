@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Data.Indexing.Persistent.Test.Models;
+using Microsoft.ServiceFabric.Data.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.ServiceFabric.Data.Indexing.Test.Mocks;
-using Microsoft.ServiceFabric.Data.Indexing.Test.Models;
 
-namespace Microsoft.ServiceFabric.Data.Indexing.Test
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 {
 	[TestClass]
 	public class SearchableIndexTests

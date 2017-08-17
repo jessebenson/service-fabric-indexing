@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Collections;
 
-namespace Microsoft.ServiceFabric.Data.Indexing
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
 	/// <summary>
 	/// Represents a reliable collection of key/value pairs that are persisted and replicated, with support for reverse indexing and full-text search.

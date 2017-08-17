@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Microsoft.ServiceFabric.Data.Indexing.Test.Mocks
+namespace Microsoft.ServiceFabric.Data.Mocks
 {
 	public sealed class MockAsyncEnumerable<T> : IAsyncEnumerable<T>
 	{

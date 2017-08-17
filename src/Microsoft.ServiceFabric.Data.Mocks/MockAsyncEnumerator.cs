@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.ServiceFabric.Data.Indexing.Test.Mocks
+namespace Microsoft.ServiceFabric.Data.Mocks
 {
 	public sealed class MockAsyncEnumerator<T> : IAsyncEnumerator<T>
 	{

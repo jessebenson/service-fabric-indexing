@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.ServiceFabric.Data.Indexing.Test.Mocks;
+using Microsoft.ServiceFabric.Data.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.ServiceFabric.Data.Indexing.Test
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 {
 	[TestClass]
 	public class IndexExtensionsTests

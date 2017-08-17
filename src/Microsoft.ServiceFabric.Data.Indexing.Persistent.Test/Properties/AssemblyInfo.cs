@@ -2,11 +2,11 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Microsoft.ServiceFabric.Data.Indexing.Test")]
+[assembly: AssemblyTitle("Microsoft.ServiceFabric.Data.Indexing.Persistent.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.ServiceFabric.Data.Indexing.Test")]
+[assembly: AssemblyProduct("Microsoft.ServiceFabric.Data.Indexing.Persistent.Test")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

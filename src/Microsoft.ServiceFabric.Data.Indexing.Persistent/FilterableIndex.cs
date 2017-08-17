@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Collections;
 
-namespace Microsoft.ServiceFabric.Data.Indexing
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
 	/// <summary>
 	/// Defintion for a reverse index that supports filtering for exact matches on a property.

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.ServiceFabric.Data.Indexing.Test.Models
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test.Models
 {
 	public sealed class Person
 	{

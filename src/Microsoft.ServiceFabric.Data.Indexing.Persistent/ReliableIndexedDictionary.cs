@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Data.Notifications;
 
-namespace Microsoft.ServiceFabric.Data.Indexing
+namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
 	internal class ReliableIndexedDictionary<TKey, TValue> : IReliableIndexedDictionary<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>
