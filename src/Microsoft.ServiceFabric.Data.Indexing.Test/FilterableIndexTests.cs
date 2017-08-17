@@ -168,35 +168,30 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Test
 				results = await dictionary.RangeFilterAsync(tx, "age", 70, 100);
 				Assert.AreEqual(0, results.Count());
 
-				// Range filter - fully included.
+				// Range filter - fully included (order is important).
 				results = await dictionary.RangeFilterAsync(tx, "age", 0, 100);
 				Assert.AreEqual(3, results.Count());
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), jane);
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+				CollectionAssert.AreEqual(new[] { jane, john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included.
 				results = await dictionary.RangeFilterAsync(tx, "age", 30, 40);
 				Assert.AreEqual(2, results.Count());
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, start overlaps.
 				results = await dictionary.RangeFilterAsync(tx, "age", 32, 40);
 				Assert.AreEqual(2, results.Count());
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, end overlaps.
 				results = await dictionary.RangeFilterAsync(tx, "age", 30, 35);
 				Assert.AreEqual(2, results.Count());
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, in the middle.
 				results = await dictionary.RangeFilterAsync(tx, "age", 30, 33);
 				Assert.AreEqual(1, results.Count());
-				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
+				CollectionAssert.AreEqual(new[] { john }, results.Select(x => x.Value).ToArray());
 
 				await tx.CommitAsync();
 			}

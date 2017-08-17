@@ -96,8 +96,9 @@ public class MyService : StatefulService
 Filterable indexes define a reverse index on a given property.  Filtering will only return key-values that have exact matches for the property.
 
 - Ideal for indexing on properties with small-sized values.
-- The property value must be deterministic given a key and value, but need not be a property on either (it can be a composite value).  
+- The property value must be deterministic given a key and value, but need not be a property on either (it can be a composite value).
 - The property value must be a comparable type (IComparable<T> and IEquatable<T>).
+- Range filter returns key-values in order on the filter values.
 
 ```csharp
 // constructor:

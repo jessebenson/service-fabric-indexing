@@ -44,7 +44,8 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 		/// </summary>
 		public async Task<IEnumerable<TKey>> RangeFilterAsync(ITransaction tx, TFilter start, TFilter end, CancellationToken token)
 		{
-			var keys = new HashSet<TKey>();
+			// Since filters uses exact matches, each key should appear exactly once in the index.
+			var keys = new List<TKey>();
 
 			// Include all values that fall within the range [start, end] inclusively.
 			Func<TFilter, bool> filter = f => start.CompareTo(f) <= 0 && f.CompareTo(end) <= 0;
