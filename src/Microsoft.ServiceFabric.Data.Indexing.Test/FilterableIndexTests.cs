@@ -99,7 +99,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Test
 				// Search the index for Jane.  This should return the Jane person.
 				result = await dictionary.FilterAsync(tx, "name", "Jane");
 				Assert.AreEqual(1, result.Count());
-				Assert.AreSame(jane, result.First().Value);
+				CollectionAssert.Contains(result.Select(x => x.Value).ToArray(), jane);
 
 				await tx.CommitAsync();
 			}
@@ -112,7 +112,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Test
 			var dictionary = await stateManager.GetOrAddIndexedAsync("test",
 				new FilterableIndex<Guid, Person, string>("name", (k, p) => p.Name));
 
-			// Add person using normal IReliableDictionary APIs.  This should update the index as well.
+			// Add people using normal IReliableDictionary APIs.  This should update the index as well.
 			var john1 = new Person { Name = "John", Age = 23 };
 			var john2 = new Person { Name = "John", Age = 35 };
 			using (var tx = stateManager.CreateTransaction())
@@ -138,5 +138,68 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Test
 			}
 		}
 
+		[TestMethod]
+		public async Task RangeFilter()
+		{
+			var stateManager = new MockReliableStateManager();
+			var dictionary = await stateManager.GetOrAddIndexedAsync("test",
+				new FilterableIndex<Guid, Person, int>("age", (k, p) => p.Age));
+
+			// Add people using normal IReliableDictionary APIs.  This should update the index as well.
+			var john = new Person { Name = "John", Age = 32 };
+			var jane = new Person { Name = "Jane", Age = 25 };
+			var mary = new Person { Name = "Mary", Age = 35 };
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				await dictionary.AddAsync(tx, john.Id, john);
+				await dictionary.AddAsync(tx, jane.Id, jane);
+				await dictionary.AddAsync(tx, mary.Id, mary);
+				await tx.CommitAsync();
+			}
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				// Range filter - range too low
+				var results = await dictionary.RangeFilterAsync(tx, "age", 0, 10);
+				Assert.AreEqual(0, results.Count());
+
+				// Range filter - range too high.
+				results = await dictionary.RangeFilterAsync(tx, "age", 70, 100);
+				Assert.AreEqual(0, results.Count());
+
+				// Range filter - fully included.
+				results = await dictionary.RangeFilterAsync(tx, "age", 0, 100);
+				Assert.AreEqual(3, results.Count());
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), jane);
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+
+				// Range filter - partially included.
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, 40);
+				Assert.AreEqual(2, results.Count());
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+
+				// Range filter - partially included, start overlaps.
+				results = await dictionary.RangeFilterAsync(tx, "age", 32, 40);
+				Assert.AreEqual(2, results.Count());
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+
+				// Range filter - partially included, end overlaps.
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, 35);
+				Assert.AreEqual(2, results.Count());
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), mary);
+
+				// Range filter - partially included, in the middle.
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, 33);
+				Assert.AreEqual(1, results.Count());
+				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john);
+
+				await tx.CommitAsync();
+			}
+		}
 	}
 }

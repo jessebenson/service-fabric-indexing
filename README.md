@@ -41,7 +41,7 @@ public class MyService : StatefulService
 }
 ```
 
-3. After adding data to the collection, use the FilterAsync() and SearchAsync() methods to quickly retrieve results.
+3. After adding data to the collection, use the FilterAsync(), RangeFilterAsync(), and SearchAsync() methods to quickly retrieve results.
 
 ```csharp
 public class MyService : StatefulService
@@ -51,15 +51,17 @@ public class MyService : StatefulService
         var dictionary = await StateManager.GetOrAddIndexedAsync<string, Product>("products",
             // Add a reverse index on the Product.Name property:
             new FilterableIndex<string, Product, string>("name", (k, v) => v.Name),
+            // Add a reverse index on the Product.Price property:
+            new FilterableIndex<string, Product, double>("price", (k, v) => v.Price),
             // Add a full-text index on the Product.Description property:
             new SearchableIndex<string, Product>("description", (k, v) => v.Description));
         
         // Add some data.
         using (var tx = StateManager.CreateTransaction())
         {
-            await dictionary.SetAsync(tx, "red-polo", new Product { Name = "Red Polo", Description = "A red polo t-shirt." });
-            await dictionary.SetAsync(tx, "red-skirt", new Product { Name = "Red Skirt", Description = "A long red skirt." });
-            await dictionary.SetAsync(tx, "blue-skirt", new Product { Name = "Blue Skirt", Description = "A long blue skirt." });
+            await dictionary.SetAsync(tx, "red-polo", new Product { Name = "Red Polo", Price = 29.99, Description = "A red polo t-shirt." });
+            await dictionary.SetAsync(tx, "red-skirt", new Product { Name = "Red Skirt", Price = 19.99, Description = "A long red skirt." });
+            await dictionary.SetAsync(tx, "blue-skirt", new Product { Name = "Blue Skirt", Price = 24.99, Description = "A long blue skirt." });
             await tx.CommitAsync();
         }
         
@@ -67,7 +69,10 @@ public class MyService : StatefulService
         using (var tx = StateManager.CreateTransaction())
         {
             var results = await dictionary.FilterAsync(tx, "name", "Red Polo");
-            // 'results' contains the "red-polo" Product.
+            // 'results' contains the "red-polo" product.
+            
+            results = await dictionary.RangeFilterAsync(tx, "price", 20, 30);
+            // 'results' contains the "red-polo" and "blue-skirt" products.
             
             results = await dictionary.SearchAsync(tx, "red");
             // 'results' contains both "red-polo" and "red-skirt" products.
@@ -101,8 +106,11 @@ public FilterableIndex<TKey, TValue, TFilter>(string name, Func<TKey, TValue, TF
 // index definition:
 new FilterableIndex<string, Person, int>("age", (string key, Person value) => value.Age);
 
-// usage:
+// usage (exact match):
 IEnumerable<KeyValuePair<string, Person>> results = await dictionary.FilterAsync(tx, "age", 30);
+
+// usage (range filter):
+IEnumerable<KeyValuePair<string, Person>> results = await dictionary.RangeFilterAsync(tx, "age", 20, 30);
 ```
 
 ## SearchableIndex

@@ -9,7 +9,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 {
 	/// <summary>
 	/// Defintion for a reverse index that supports filtering for exact matches on a property.
-	/// This will create an <see cref="IReliableDictionary{TFilter, TKey[]}"/> to store the index.
+	/// This will create an <see cref="IReliableDictionary2{TFilter, TKey[]}"/> to store the index.
 	/// </summary>
 	public sealed class FilterableIndex<TKey, TValue, TFilter> : IIndexDefinition<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>
@@ -18,7 +18,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 		public string Name { get; }
 		public Func<TKey, TValue, TFilter> Filter { get; }
 
-		private IReliableDictionary<TFilter, TKey[]> _index;
+		private IReliableDictionary2<TFilter, TKey[]> _index;
 
 		/// <summary>
 		/// Creates a new filterable index.  The filter value must be deterministic based on the input key and value.
@@ -40,13 +40,34 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 		}
 
 		/// <summary>
+		/// Retrieves all keys that fall in the given filter range (inclusively), or an empty array if there are no matches.
+		/// </summary>
+		public async Task<IEnumerable<TKey>> RangeFilterAsync(ITransaction tx, TFilter start, TFilter end, CancellationToken token)
+		{
+			var keys = new HashSet<TKey>();
+
+			// Include all values that fall within the range [start, end] inclusively.
+			Func<TFilter, bool> filter = f => start.CompareTo(f) <= 0 && f.CompareTo(end) <= 0;
+			var enumerable = await _index.CreateEnumerableAsync(tx, filter, EnumerationMode.Ordered).ConfigureAwait(false);
+
+			// Enumerate the index.
+			var enumerator = enumerable.GetAsyncEnumerator();
+			while (await enumerator.MoveNextAsync(token))
+			{
+				keys.AddRange(enumerator.Current.Value);
+			}
+
+			return keys;
+		}
+
+		/// <summary>
 		/// Try to load the existing reliable collection for this index and cache it.
 		/// This is called internally and should not be directly called.
 		/// </summary>
 		async Task<bool> IIndexDefinition<TKey, TValue>.TryGetIndexAsync(IReliableStateManager stateManager, Uri baseName)
 		{
 			var indexName = GetIndexName(baseName);
-			var result = await stateManager.TryGetAsync<IReliableDictionary<TFilter, TKey[]>>(indexName).ConfigureAwait(false);
+			var result = await stateManager.TryGetAsync<IReliableDictionary2<TFilter, TKey[]>>(indexName).ConfigureAwait(false);
 			if (!result.HasValue)
 				return false;
 
@@ -61,7 +82,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 		async Task IIndexDefinition<TKey, TValue>.GetOrAddIndexAsync(ITransaction tx, IReliableStateManager stateManager, Uri baseName, TimeSpan timeout)
 		{
 			var indexName = GetIndexName(baseName);
-			_index = await stateManager.GetOrAddAsync<IReliableDictionary<TFilter, TKey[]>>(tx, indexName, timeout).ConfigureAwait(false);
+			_index = await stateManager.GetOrAddAsync<IReliableDictionary2<TFilter, TKey[]>>(tx, indexName, timeout).ConfigureAwait(false);
 		}
 
 		/// <summary>

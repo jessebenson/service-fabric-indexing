@@ -9,7 +9,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 {
 	/// <summary>
 	/// Defintion for an index that supports full-text search within a string property.
-	/// This will create an <see cref="IReliableDictionary{string, TKey[]}"/> to store the index.
+	/// This will create an <see cref="IReliableDictionary2{string, TKey[]}"/> to store the index.
 	/// </summary>
 	public sealed class SearchableIndex<TKey, TValue> : IIndexDefinition<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>
@@ -17,7 +17,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 		public string Name { get; }
 		public Func<TKey, TValue, string> Property { get; }
 
-		private IReliableDictionary<string, TKey[]> _index;
+		private IReliableDictionary2<string, TKey[]> _index;
 
 		/// <summary>
 		/// Creates a new full-text search index.  The property value must be deterministic based on the input key and value.
@@ -56,7 +56,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 		async Task<bool> IIndexDefinition<TKey, TValue>.TryGetIndexAsync(IReliableStateManager stateManager, Uri baseName)
 		{
 			var indexName = GetIndexName(baseName);
-			var result = await stateManager.TryGetAsync<IReliableDictionary<string, TKey[]>>(indexName).ConfigureAwait(false);
+			var result = await stateManager.TryGetAsync<IReliableDictionary2<string, TKey[]>>(indexName).ConfigureAwait(false);
 			if (!result.HasValue)
 				return false;
 

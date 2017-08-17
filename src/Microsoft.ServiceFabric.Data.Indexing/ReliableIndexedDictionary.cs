@@ -303,29 +303,32 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
-			if (!_filterIndexes.TryGetValue(indexName, out IIndexDefinition<TKey, TValue> definition))
-				throw new KeyNotFoundException($"Index '{indexName}' not found.");
-
-			// Ensure the index is of the correct type.
-			var index = definition as FilterableIndex<TKey, TValue, TFilter>;
-			if (index == null)
-				throw new InvalidCastException($"Index '{indexName}' is not a filterable index of this type.");
+			var index = GetFilterableIndex<TFilter>(indexName);
 
 			// Find the keys that match this filter.
 			var keys = await index.FilterAsync(tx, filter, timeout, token).ConfigureAwait(false);
 
 			// Get the rows that match this filter.
-			var results = new List<KeyValuePair<TKey, TValue>>();
-			foreach (var key in keys)
-			{
-				var result = await _dictionary.TryGetValueAsync(tx, key, timeout, token).ConfigureAwait(false);
-				if (!result.HasValue)
-					throw new KeyNotFoundException($"Index contains a key that is not present in the reliable collection.");
+			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
+		}
 
-				results.Add(new KeyValuePair<TKey, TValue>(key, result.Value));
-			}
+		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter start, TFilter end)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			return RangeFilterAsync(tx, index, start, end, DefaultTimeout, CancellationToken.None);
+		}
 
-			return results;
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter start, TFilter end, TimeSpan timeout, CancellationToken token)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			// Find the index.
+			var index = GetFilterableIndex<TFilter>(indexName);
+
+			// Find the keys that fall within this range (inclusively).
+			var keys = await index.RangeFilterAsync(tx, start, end, token).ConfigureAwait(false);
+
+			// Get the rows that match this filter.
+			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
 		}
 
 		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search)
@@ -347,17 +350,37 @@ namespace Microsoft.ServiceFabric.Data.Indexing
 			}
 
 			// Get all rows that match this search.
+			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
+		}
+
+		private async Task<IEnumerable<KeyValuePair<TKey, TValue>>> GetAllAsync(ITransaction tx, IEnumerable<TKey> keys, TimeSpan timeout, CancellationToken token)
+		{
 			var results = new List<KeyValuePair<TKey, TValue>>();
 			foreach (var key in keys)
 			{
 				var result = await _dictionary.TryGetValueAsync(tx, key, timeout, token).ConfigureAwait(false);
 				if (!result.HasValue)
-					throw new KeyNotFoundException($"Index contains a key that is not present in the reliable collection.");
+					continue;
 
 				results.Add(new KeyValuePair<TKey, TValue>(key, result.Value));
 			}
 
 			return results;
+		}
+
+		private FilterableIndex<TKey, TValue, TFilter> GetFilterableIndex<TFilter>(string indexName)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			// Find the index.
+			if (!_filterIndexes.TryGetValue(indexName, out IIndexDefinition<TKey, TValue> definition))
+				throw new KeyNotFoundException($"Index '{indexName}' not found.");
+
+			// Ensure the index is of the correct type.
+			var index = definition as FilterableIndex<TKey, TValue, TFilter>;
+			if (index == null)
+				throw new InvalidCastException($"Index '{indexName}' is not a filterable index of this type.");
+
+			return index;
 		}
 
 		/// <summary>
