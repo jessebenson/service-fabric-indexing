@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Fabric;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Services.Runtime;
+using Microsoft.ServiceFabric.Data;
+using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Data.Indexing.Persistent;
 
 namespace StoreService

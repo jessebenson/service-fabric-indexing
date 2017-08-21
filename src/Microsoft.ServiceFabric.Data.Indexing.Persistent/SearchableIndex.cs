@@ -39,7 +39,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			var words = GetDistinctWords(search);
 			foreach (var word in words)
 			{
-				var result = await _index.TryGetValueAsync(tx, word, timeout, token).ConfigureAwait(false);
+				var result = await _index.TryGetValueAsync(tx, word, IsolationLevel.Snapshot, timeout, token).ConfigureAwait(false);
 				if (result.HasValue)
 				{
 					keys.AddRange(result.Value);

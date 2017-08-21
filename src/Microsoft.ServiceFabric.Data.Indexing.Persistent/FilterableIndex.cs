@@ -35,7 +35,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// </summary>
 		public async Task<IEnumerable<TKey>> FilterAsync(ITransaction tx, TFilter filter, TimeSpan timeout, CancellationToken token)
 		{
-			var result = await _index.TryGetValueAsync(tx, filter, timeout, token).ConfigureAwait(false);
+			var result = await _index.TryGetValueAsync(tx, filter, IsolationLevel.Snapshot, timeout, token).ConfigureAwait(false);
 			return result.HasValue ? result.Value : Enumerable.Empty<TKey>();
 		}
 

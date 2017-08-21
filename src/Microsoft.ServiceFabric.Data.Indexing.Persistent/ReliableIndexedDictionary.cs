@@ -358,9 +358,12 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			var results = new List<KeyValuePair<TKey, TValue>>();
 			foreach (var key in keys)
 			{
+				// Since we're doing snapshot reads to get the set of keys, the key may get removed by the time we try to read it.
 				var result = await _dictionary.TryGetValueAsync(tx, key, timeout, token).ConfigureAwait(false);
 				if (!result.HasValue)
 					continue;
+
+				// TODO: since we're doing snapshot reads, the value may have changed since we read the index.  We should validate the key-value still match the filter/search/etc.
 
 				results.Add(new KeyValuePair<TKey, TValue>(key, result.Value));
 			}

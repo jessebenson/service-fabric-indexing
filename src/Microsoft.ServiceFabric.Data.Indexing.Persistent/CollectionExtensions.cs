@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
-	static class CollectionExtensions
+	internal static class CollectionExtensions
 	{
 		public static void AddRange<T>(this HashSet<T> set, IEnumerable<T> items)
 		{
