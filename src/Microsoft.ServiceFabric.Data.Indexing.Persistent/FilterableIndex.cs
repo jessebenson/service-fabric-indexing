@@ -62,6 +62,14 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		}
 
 		/// <summary>
+		/// Create an async enumerable over the set of distinct filter values in this index.
+		/// </summary>
+		public Task<IAsyncEnumerable<TFilter>> CreateEnumerableAsync(ITransaction tx, EnumerationMode enumerationMode, TimeSpan timeout, CancellationToken token)
+		{
+			return _index.CreateKeyEnumerableAsync(tx, enumerationMode, timeout, token);
+		}
+
+		/// <summary>
 		/// Try to load the existing reliable collection for this index and cache it.
 		/// This is called internally and should not be directly called.
 		/// </summary>

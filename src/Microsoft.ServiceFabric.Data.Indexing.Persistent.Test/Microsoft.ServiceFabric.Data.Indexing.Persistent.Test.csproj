@@ -87,6 +87,7 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\AsyncEnumerableExtensions.cs" />
     <Compile Include="FilterableIndexTests.cs" />
     <Compile Include="IndexExtensionsTests.cs" />
     <Compile Include="Models\Address.cs" />

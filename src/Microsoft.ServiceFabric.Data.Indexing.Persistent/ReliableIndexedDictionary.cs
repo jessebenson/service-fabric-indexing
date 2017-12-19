@@ -293,6 +293,28 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			return result;
 		}
 
+		public Task<IAsyncEnumerable<TFilter>> CreateIndexEnumerableAsync<TFilter>(ITransaction tx, string index)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			return CreateIndexEnumerableAsync<TFilter>(tx, index, EnumerationMode.Unordered, DefaultTimeout, CancellationToken.None);
+		}
+
+		public Task<IAsyncEnumerable<TFilter>> CreateIndexEnumerableAsync<TFilter>(ITransaction tx, string index, EnumerationMode enumerationMode)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			return CreateIndexEnumerableAsync<TFilter>(tx, index, enumerationMode, DefaultTimeout, CancellationToken.None);
+		}
+
+		public Task<IAsyncEnumerable<TFilter>> CreateIndexEnumerableAsync<TFilter>(ITransaction tx, string indexName, EnumerationMode enumerationMode, TimeSpan timeout, CancellationToken token)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			// Find the index.
+			var index = GetFilterableIndex<TFilter>(indexName);
+
+			// Enumerate the keys (distinct filter values) of this index.
+			return index.CreateEnumerableAsync(tx, enumerationMode, timeout, token);
+		}
+
 		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{

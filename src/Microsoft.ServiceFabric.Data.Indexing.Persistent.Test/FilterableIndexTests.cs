@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Data.Indexing.Persistent.Test.Models;
 using Microsoft.ServiceFabric.Data.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -192,6 +193,37 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 				results = await dictionary.RangeFilterAsync(tx, "age", 30, 33);
 				Assert.AreEqual(1, results.Count());
 				CollectionAssert.AreEqual(new[] { john }, results.Select(x => x.Value).ToArray());
+
+				await tx.CommitAsync();
+			}
+		}
+
+		[TestMethod]
+		public async Task EnumerateFilters()
+		{
+			var stateManager = new MockReliableStateManager();
+			var dictionary = await stateManager.GetOrAddIndexedAsync("test",
+				new FilterableIndex<Guid, Person, int>("age", (k, p) => p.Age));
+
+			// Add people using normal IReliableDictionary APIs.  This should update the index as well.
+			var john = new Person { Name = "John", Age = 32 };
+			var jane = new Person { Name = "Jane", Age = 25 };
+			var mary = new Person { Name = "Mary", Age = 32 };
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				await dictionary.AddAsync(tx, john.Id, john);
+				await dictionary.AddAsync(tx, jane.Id, jane);
+				await dictionary.AddAsync(tx, mary.Id, mary);
+				await tx.CommitAsync();
+			}
+
+			using (var tx = stateManager.CreateTransaction())
+			{
+				var enumerable = await dictionary.CreateIndexEnumerableAsync<int>(tx, "age", EnumerationMode.Ordered);
+				var ages = (await enumerable.ToEnumerable()).ToArray();
+				Assert.AreEqual(2, ages.Count());
+				CollectionAssert.AreEqual(new[] { 25, 32 }, ages);
 
 				await tx.CommitAsync();
 			}

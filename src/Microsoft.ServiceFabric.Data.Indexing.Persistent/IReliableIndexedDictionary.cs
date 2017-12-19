@@ -18,6 +18,24 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		where TKey : IComparable<TKey>, IEquatable<TKey>
 	{
 		/// <summary>
+		/// Creates an async enumerator over the given index of the reliable collection to retrieve all distinct index values.
+		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
+		/// </summary>
+		Task<IAsyncEnumerable<TFilter>> CreateIndexEnumerableAsync<TFilter>(ITransaction tx, string index) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+
+		/// <summary>
+		/// Creates an async enumerator over the given index of the reliable collection to retrieve all distinct index values.
+		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
+		/// </summary>
+		Task<IAsyncEnumerable<TFilter>> CreateIndexEnumerableAsync<TFilter>(ITransaction tx, string index, EnumerationMode enumerationMode) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+
+		/// <summary>
+		/// Creates an async enumerator over the given index of the reliable collection to retrieve all distinct index values.
+		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
+		/// </summary>
+		Task<IAsyncEnumerable<TFilter>> CreateIndexEnumerableAsync<TFilter>(ITransaction tx, string index, EnumerationMode enumerationMode, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+
+		/// <summary>
 		/// Retrieve all keys and values from the reliable collection that match the given filter using the specified index name.
 		/// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
