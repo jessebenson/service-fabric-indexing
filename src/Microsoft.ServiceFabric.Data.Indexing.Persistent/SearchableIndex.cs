@@ -32,21 +32,24 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// <summary>
 		/// Retrieves all keys that satisfy the given full-text search, or an empty array if there are no matches.
 		/// </summary>
-		public async Task<IEnumerable<TKey>> SearchAsync(ITransaction tx, string search, TimeSpan timeout, CancellationToken token)
+		public async Task<IEnumerable<TKey>> SearchAsync(ITransaction tx, string search, int count, TimeSpan timeout, CancellationToken token)
 		{
 			var keys = new HashSet<TKey>();
 
 			var words = GetDistinctWords(search);
 			foreach (var word in words)
 			{
-				var result = await _index.TryGetValueAsync(tx, word, IsolationLevel.Snapshot, timeout, token).ConfigureAwait(false);
+				var result = await _index.TryGetValueAsync(tx, word, timeout, token).ConfigureAwait(false);
 				if (result.HasValue)
 				{
 					keys.AddRange(result.Value);
 				}
+
+				if (keys.Count >= count)
+					break;
 			}
 
-			return keys;
+			return keys.Take(count);
 		}
 
 		/// <summary>

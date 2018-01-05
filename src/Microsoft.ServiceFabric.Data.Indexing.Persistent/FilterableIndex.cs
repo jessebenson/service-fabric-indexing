@@ -33,16 +33,16 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// <summary>
 		/// Retrieves all keys that match the given filter value, or an empty array if there are no matches.
 		/// </summary>
-		public async Task<IEnumerable<TKey>> FilterAsync(ITransaction tx, TFilter filter, TimeSpan timeout, CancellationToken token)
+		public async Task<IEnumerable<TKey>> FilterAsync(ITransaction tx, TFilter filter, int count, TimeSpan timeout, CancellationToken token)
 		{
-			var result = await _index.TryGetValueAsync(tx, filter, IsolationLevel.Snapshot, timeout, token).ConfigureAwait(false);
-			return result.HasValue ? result.Value : Enumerable.Empty<TKey>();
+			var result = await _index.TryGetValueAsync(tx, filter, timeout, token).ConfigureAwait(false);
+			return result.HasValue ? result.Value.Take(count) : Enumerable.Empty<TKey>();
 		}
 
 		/// <summary>
 		/// Retrieves all keys that fall in the given filter range (inclusively), or an empty array if there are no matches.
 		/// </summary>
-		public async Task<IEnumerable<TKey>> RangeFilterAsync(ITransaction tx, TFilter start, TFilter end, CancellationToken token)
+		public async Task<IEnumerable<TKey>> RangeFilterAsync(ITransaction tx, TFilter start, TFilter end, int count, CancellationToken token)
 		{
 			// Since filters uses exact matches, each key should appear exactly once in the index.
 			var keys = new List<TKey>();
@@ -53,12 +53,12 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 
 			// Enumerate the index.
 			var enumerator = enumerable.GetAsyncEnumerator();
-			while (await enumerator.MoveNextAsync(token))
+			while (await enumerator.MoveNextAsync(token).ConfigureAwait(false) && keys.Count < count)
 			{
 				keys.AddRange(enumerator.Current.Value);
 			}
 
-			return keys;
+			return keys.Take(count);
 		}
 
 		/// <summary>

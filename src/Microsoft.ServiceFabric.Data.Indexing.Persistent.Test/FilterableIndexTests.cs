@@ -72,7 +72,6 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			}
 		}
 
-
 		[TestMethod]
 		public async Task StringFilter_Update()
 		{
@@ -135,6 +134,12 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 				var nobody = await dictionary.FilterAsync(tx, "name", "Jane");
 				Assert.AreEqual(0, nobody.Count());
 
+				// Search the index for this person's name with a count limit.  This should return one of people we added above.
+				var single = await dictionary.FilterAsync(tx, "name", "John", count: 1);
+				Assert.AreEqual(1, single.Count());
+				var singleActual = results.Select(x => x.Value).First();
+				Assert.IsTrue(singleActual == john1 || singleActual == john2);
+
 				await tx.CommitAsync();
 			}
 		}
@@ -193,6 +198,12 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 				results = await dictionary.RangeFilterAsync(tx, "age", 30, 33);
 				Assert.AreEqual(1, results.Count());
 				CollectionAssert.AreEqual(new[] { john }, results.Select(x => x.Value).ToArray());
+
+				// Range filter - partially included, count limit.
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, 35, count: 1);
+				Assert.AreEqual(1, results.Count());
+				var singleActual = results.Select(x => x.Value).First();
+				Assert.IsTrue(singleActual == john || singleActual == mary);
 
 				await tx.CommitAsync();
 			}

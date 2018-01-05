@@ -318,17 +318,23 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
-			return FilterAsync(tx, index, filter, DefaultTimeout, CancellationToken.None);
+			return FilterAsync(tx, index, filter, int.MaxValue, DefaultTimeout, CancellationToken.None);
 		}
 
-		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string indexName, TFilter filter, TimeSpan timeout, CancellationToken token)
+		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter, int count)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			return FilterAsync(tx, index, filter, count, DefaultTimeout, CancellationToken.None);
+		}
+
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string indexName, TFilter filter, int count, TimeSpan timeout, CancellationToken token)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
 			// Find the keys that match this filter.
-			var keys = await index.FilterAsync(tx, filter, timeout, token).ConfigureAwait(false);
+			var keys = await index.FilterAsync(tx, filter, count, timeout, token).ConfigureAwait(false);
 
 			// Get the rows that match this filter.
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
@@ -337,17 +343,23 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter start, TFilter end)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
-			return RangeFilterAsync(tx, index, start, end, DefaultTimeout, CancellationToken.None);
+			return RangeFilterAsync(tx, index, start, end, int.MaxValue, DefaultTimeout, CancellationToken.None);
 		}
 
-		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter start, TFilter end, TimeSpan timeout, CancellationToken token)
+		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter start, TFilter end, int count)
+			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		{
+			return RangeFilterAsync(tx, index, start, end, count, DefaultTimeout, CancellationToken.None);
+		}
+
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter start, TFilter end, int count, TimeSpan timeout, CancellationToken token)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
 			// Find the keys that fall within this range (inclusively).
-			var keys = await index.RangeFilterAsync(tx, start, end, token).ConfigureAwait(false);
+			var keys = await index.RangeFilterAsync(tx, start, end, count, token).ConfigureAwait(false);
 
 			// Get the rows that match this filter.
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
@@ -355,10 +367,15 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 
 		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search)
 		{
-			return SearchAsync(tx, search, DefaultTimeout, CancellationToken.None);
+			return SearchAsync(tx, search, int.MaxValue, DefaultTimeout, CancellationToken.None);
 		}
 
-		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, TimeSpan timeout, CancellationToken token)
+		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, int count)
+		{
+			return SearchAsync(tx, search, count, DefaultTimeout, CancellationToken.None);
+		}
+
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, int count, TimeSpan timeout, CancellationToken token)
 		{
 			if (_searchIndexes.Count == 0)
 				throw new InvalidOperationException("You must define at least one SearchableIndex to enable full-text search.");
@@ -367,7 +384,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			var keys = new HashSet<TKey>();
 			foreach (var searchIndex in _searchIndexes.Values)
 			{
-				var partialKeys = await searchIndex.SearchAsync(tx, search, timeout, token).ConfigureAwait(false);
+				var partialKeys = await searchIndex.SearchAsync(tx, search, count, timeout, token).ConfigureAwait(false);
 				keys.AddRange(partialKeys);
 			}
 

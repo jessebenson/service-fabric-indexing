@@ -57,6 +57,12 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 				var nobody = await dictionary.SearchAsync(tx, "unknown");
 				Assert.AreEqual(0, nobody.Count());
 
+				// Search the index for the last name as lower-case with a count limit.  This should return one.
+				doeSearch = await dictionary.SearchAsync(tx, "doe", count: 1);
+				Assert.AreEqual(1, doeSearch.Count());
+				var singleActual = doeSearch.Select(x => x.Value).First();
+				Assert.IsTrue(singleActual == john || singleActual == jane);
+
 				await tx.CommitAsync();
 			}
 		}
