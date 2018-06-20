@@ -8,7 +8,7 @@ using Microsoft.ServiceFabric.Data.Notifications;
 
 namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
-	internal class ReliableIndexedDictionary<TKey, TValue> : IReliableIndexedDictionary<TKey, TValue>
+	public class ReliableIndexedDictionary<TKey, TValue> : IReliableIndexedDictionary<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>
 	{
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(4);
@@ -321,7 +321,13 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			return FilterAsync(tx, index, filter, int.MaxValue, DefaultTimeout, CancellationToken.None);
 		}
 
-		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter, int count)
+        // test only
+        public Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync(ITransaction tx, string index)
+        {
+            return null;
+        }
+
+        public Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter, int count)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			return FilterAsync(tx, index, filter, count, DefaultTimeout, CancellationToken.None);
@@ -359,7 +365,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			var index = GetFilterableIndex<TFilter>(indexName);
 
 			// Find the keys that fall within this range (inclusively).
-			var keys = await index.RangeFilterAsync(tx, start, end, count, token).ConfigureAwait(false);
+			var keys = await index.RangeFilterAsync(tx, start, RangeFilterType.INCLUSIVE, end, RangeFilterType.INCLUSIVE, count, token).ConfigureAwait(false);
 
 			// Get the rows that match this filter.
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
@@ -392,7 +398,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
 		}
 
-		private async Task<IEnumerable<KeyValuePair<TKey, TValue>>> GetAllAsync(ITransaction tx, IEnumerable<TKey> keys, TimeSpan timeout, CancellationToken token)
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> GetAllAsync(ITransaction tx, IEnumerable<TKey> keys, TimeSpan timeout, CancellationToken token)
 		{
 			var results = new List<KeyValuePair<TKey, TValue>>();
 			foreach (var key in keys)
@@ -407,10 +413,10 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 				results.Add(new KeyValuePair<TKey, TValue>(key, result.Value));
 			}
 
-			return results;
+			return Enumerable.AsEnumerable(results);
 		}
 
-		private FilterableIndex<TKey, TValue, TFilter> GetFilterableIndex<TFilter>(string indexName)
+		public FilterableIndex<TKey, TValue, TFilter> GetFilterableIndex<TFilter>(string indexName)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
