@@ -42,6 +42,11 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
         public static FilterableIndex<TKey, TValue, TFilter> CreateQueryableInstance(string valuePropertyName)
         {
             string name = valuePropertyName ?? throw new ArgumentNullException(nameof(valuePropertyName));
+            if (typeof(TValue).GetProperty(valuePropertyName) == null)
+            {
+                throw new ArgumentException("Dictionary value type: " + typeof(TValue).ToString() + " does not have property: " + valuePropertyName + ", note that nestled types (e.g. Value/Name/FirstName) are not currently supported");
+            }
+
             // Construct the lambda we expect the index we are looking for to have
             // (k, v) => v.PropertyName
             ParameterExpression keyParameterExpression = Expression.Parameter(typeof(TKey), "k");
@@ -55,32 +60,34 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// <summary>
 		/// Retrieves all keys that match the given filter value, or an empty array if there are no matches.
 		/// </summary>
-		public async Task<IEnumerable<TKey>> FilterAsync(ITransaction tx, TFilter filter, int count, TimeSpan timeout, CancellationToken token)
+		public async Task<IEnumerable<TKey>> FilterAsync(ITransaction tx, TFilter filter, TimeSpan timeout, CancellationToken token)
 		{
 			var result = await _index.TryGetValueAsync(tx, filter, timeout, token).ConfigureAwait(false);
-			return result.HasValue ? result.Value.Take(count) : Enumerable.Empty<TKey>();
+			TKey[] results =  result.HasValue ? result.Value : new TKey[] { };
+            Array.Sort(results);
+            return results.AsEnumerable();
 		}
 
 		/// <summary>
 		/// Retrieves all keys that fall in the given filter range, or an empty array if there are no matches.
 		/// </summary>
-		public async Task<IEnumerable<TKey>> RangeFilterAsync(ITransaction tx, TFilter start, RangeFilterType startType, TFilter end, RangeFilterType endType, int count, CancellationToken token)
+		public async Task<IEnumerable<TKey>> RangeFilterAsync(ITransaction tx, TFilter start, RangeFilterType startType, TFilter end, RangeFilterType endType, CancellationToken token)
 		{
             if (startType == RangeFilterType.INCLUSIVE && endType == RangeFilterType.INCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) <= 0, count, token);
+                return await RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) <= 0, token);
             }
             else if (startType == RangeFilterType.EXCLUSIVE && endType == RangeFilterType.INCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) <= 0, count, token);
+                return await RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) <= 0, token);
             }
             else if (startType == RangeFilterType.INCLUSIVE && endType == RangeFilterType.EXCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) < 0, count, token);
+                return await RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) < 0, token);
             }
             else if (startType == RangeFilterType.EXCLUSIVE && endType == RangeFilterType.EXCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) < 0, count, token);
+                return await RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) < 0, token);
             }
             else
             {
@@ -88,15 +95,15 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
             }
         }
 
-        public async Task<IEnumerable<TKey>> RangeToFilterAsync(ITransaction tx, TFilter end, RangeFilterType endType, int count, CancellationToken token)
+        public async Task<IEnumerable<TKey>> RangeToFilterAsync(ITransaction tx, TFilter end, RangeFilterType endType, CancellationToken token)
         {
             if (endType == RangeFilterType.INCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => f.CompareTo(end) <= 0, count, token);
+                return await RangeFilterHelper(tx, f => f.CompareTo(end) <= 0, token);
             }
             else if (endType == RangeFilterType.EXCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => f.CompareTo(end) < 0, count, token);
+                return await RangeFilterHelper(tx, f => f.CompareTo(end) < 0, token);
             }
             else
             {
@@ -104,15 +111,15 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
             }
         }
 
-        public async Task<IEnumerable<TKey>> RangeFromFilterAsync(ITransaction tx, TFilter start, RangeFilterType startType, int count, CancellationToken token)
+        public async Task<IEnumerable<TKey>> RangeFromFilterAsync(ITransaction tx, TFilter start, RangeFilterType startType, CancellationToken token)
         {
             if (startType == RangeFilterType.INCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => start.CompareTo(f) <= 0, count, token);
+                return await RangeFilterHelper(tx, f => start.CompareTo(f) <= 0, token);
             }
             else if (startType == RangeFilterType.EXCLUSIVE)
             {
-                return await RangeFilterHelper(tx, f => start.CompareTo(f) < 0, count, token);
+                return await RangeFilterHelper(tx, f => start.CompareTo(f) < 0, token);
             }
             else
             {
@@ -120,7 +127,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
             }
         }
 
-        public async Task<IEnumerable<TKey>> RangeFilterHelper(ITransaction tx, Func<TFilter, bool> filter, int count, CancellationToken token)
+        public async Task<IEnumerable<TKey>> RangeFilterHelper(ITransaction tx, Func<TFilter, bool> filter, CancellationToken token)
         {
             // Since filters uses exact matches, each key should appear exactly once in the index.
             var keys = new List<TKey>();
@@ -130,12 +137,13 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 
             // Enumerate the index.
             var enumerator = enumerable.GetAsyncEnumerator();
-            while (await enumerator.MoveNextAsync(token).ConfigureAwait(false) && keys.Count < count)
+            while (await enumerator.MoveNextAsync(token).ConfigureAwait(false))
             {
                 keys.AddRange(enumerator.Current.Value);
             }
 
-            return keys.Take(count);
+            keys.Sort();
+            return keys.Take(Int32.MaxValue);
         }
 
         /// <summary>
