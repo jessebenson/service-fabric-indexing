@@ -91,5 +91,19 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// The indexes are defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// </summary>
 		Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, int count, TimeSpan timeout, CancellationToken token);
-	}
+
+        Task<IEnumerable<TKey>> FilterKeysOnlyAsync<TFilter>(ITransaction tx, string propertyName, TFilter constant, TimeSpan timeSpan, CancellationToken cancellationToken) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+        /// <summary>
+        /// Retrieve all keys from the reliable collection that fall within the given range staring at the start value through the end of the dictionary
+        /// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
+        /// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
+        /// </summary>
+        Task<IEnumerable<TKey>> RangeFromFilterKeysOnlyAsync<TFilter>(ITransaction tx, string propertyName, TFilter constant, RangeFilterType EXCLUSIVE, TimeSpan timeSpan, CancellationToken cancellationToken) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+        /// <summary>
+        /// Retrieve all keys from the reliable collection that fall within the given range from the start of the dictionary to the end value provided
+        /// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
+        /// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
+        /// </summary>
+        Task<IEnumerable<TKey>> RangeToFilterKeysOnlyAsync<TFilter>(ITransaction tx, string propertyName, TFilter constant, RangeFilterType EXCLUSIVE, TimeSpan timeSpan, CancellationToken cancellationToken) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+    }
 }

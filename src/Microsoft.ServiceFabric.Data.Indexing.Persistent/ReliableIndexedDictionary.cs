@@ -8,7 +8,7 @@ using Microsoft.ServiceFabric.Data.Notifications;
 
 namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
-	public class ReliableIndexedDictionary<TKey, TValue> : IReliableIndexedDictionary<TKey, TValue>
+	internal class ReliableIndexedDictionary<TKey, TValue> : IReliableIndexedDictionary<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>
 	{
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(4);
@@ -396,10 +396,10 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 				results.Add(new KeyValuePair<TKey, TValue>(key, result.Value));
 			}
 
-			return Enumerable.AsEnumerable(results);
+            return results;
 		}
 
-		public FilterableIndex<TKey, TValue, TFilter> GetFilterableIndex<TFilter>(string indexName)
+		private FilterableIndex<TKey, TValue, TFilter> GetFilterableIndex<TFilter>(string indexName)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
