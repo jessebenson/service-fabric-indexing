@@ -142,7 +142,6 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 				keys.AddRange(enumerator.Current.Value);
 			}
 
-			keys.Sort();
 			return keys;
 		}
 

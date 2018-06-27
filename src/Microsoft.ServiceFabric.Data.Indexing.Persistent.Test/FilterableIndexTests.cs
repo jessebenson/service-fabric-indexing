@@ -134,12 +134,6 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 				var nobody = await dictionary.FilterAsync(tx, "name", "Jane");
 				Assert.AreEqual(0, nobody.Count());
 
-				// Search the index for this person's name with a count limit.  This should return one of people we added above.
-				var single = await dictionary.FilterAsync(tx, "name", "John", count: 1);
-				Assert.AreEqual(1, single.Count());
-				var singleActual = results.Select(x => x.Value).First();
-				Assert.IsTrue(singleActual == john1 || singleActual == john2);
-
 				await tx.CommitAsync();
 			}
 		}
@@ -167,43 +161,43 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Range filter - range too low
-				var results = await dictionary.RangeFilterAsync(tx, "age", 0, 10);
+				var results = await dictionary.RangeFilterAsync(tx, "age", 0, RangeFilterType.Inclusive, 10, RangeFilterType.Inclusive);
 				Assert.AreEqual(0, results.Count());
 
 				// Range filter - range too high.
-				results = await dictionary.RangeFilterAsync(tx, "age", 70, 100);
+				results = await dictionary.RangeFilterAsync(tx, "age", 70, RangeFilterType.Inclusive, 100, RangeFilterType.Inclusive);
 				Assert.AreEqual(0, results.Count());
 
 				// Range filter - fully included (order is important).
-				results = await dictionary.RangeFilterAsync(tx, "age", 0, 100);
+				results = await dictionary.RangeFilterAsync(tx, "age", 0, RangeFilterType.Inclusive, 100, RangeFilterType.Inclusive);
 				Assert.AreEqual(3, results.Count());
 				CollectionAssert.AreEqual(new[] { jane, john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, 40);
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 40, RangeFilterType.Inclusive);
 				Assert.AreEqual(2, results.Count());
 				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, start overlaps.
-				results = await dictionary.RangeFilterAsync(tx, "age", 32, 40);
+				results = await dictionary.RangeFilterAsync(tx, "age", 32, RangeFilterType.Inclusive, 40, RangeFilterType.Inclusive);
 				Assert.AreEqual(2, results.Count());
 				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, end overlaps.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, 35);
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 35, RangeFilterType.Inclusive);
 				Assert.AreEqual(2, results.Count());
 				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, in the middle.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, 33);
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 33, RangeFilterType.Inclusive);
 				Assert.AreEqual(1, results.Count());
 				CollectionAssert.AreEqual(new[] { john }, results.Select(x => x.Value).ToArray());
 
-				// Range filter - partially included, count limit.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, 35, count: 1);
+				// Range filter - partially included, exclusive.
+				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Exclusive, 35, RangeFilterType.Exclusive);
 				Assert.AreEqual(1, results.Count());
 				var singleActual = results.Select(x => x.Value).First();
-				Assert.IsTrue(singleActual == john || singleActual == mary);
+				Assert.IsTrue(singleActual == john);
 
 				await tx.CommitAsync();
 			}

@@ -334,21 +334,20 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
 		}
 
-
-		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter start, RangeFilterType startType, TFilter end, RangeFilterType endType)
+		public Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter startFilter, RangeFilterType startType, TFilter endFilter, RangeFilterType endType)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
-			return RangeFilterAsync(tx, index, start, startType, end, endType, DefaultTimeout, CancellationToken.None);
+			return RangeFilterAsync(tx, index, startFilter, startType, endFilter, endType, DefaultTimeout, CancellationToken.None);
 		}
 
-		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter start, RangeFilterType startType, TFilter end, RangeFilterType endType, TimeSpan timeout, CancellationToken token)
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter startFilter, RangeFilterType startType, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
-			// Find the keys that fall within this range (inclusively).
-			var keys = await index.RangeFilterAsync(tx, start, startType, end, endType, token).ConfigureAwait(false);
+			// Find the keys that fall within this range (inclusively or exclusively).
+			var keys = await index.RangeFilterAsync(tx, startFilter, startType, endFilter, endType, token).ConfigureAwait(false);
 
 			// Get the rows that match this filter.
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
@@ -459,68 +458,68 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			}
 		}
 
-		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeToFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter end, RangeFilterType endType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeToFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
-			// Find the keys that fall within this range (inclusively).
-			var keys = await index.RangeToFilterAsync(tx, end, endType, token).ConfigureAwait(false);
+			// Find the keys from the start to the end value (inclusively or exclusively).
+			var keys = await index.RangeToFilterAsync(tx, endFilter, endType, token).ConfigureAwait(false);
 
 			// Get the rows that match this filter.
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
 		}
 
-		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFromFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter start, RangeFilterType startType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>
+		public async Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFromFilterAsync<TFilter>(ITransaction tx, string indexName, TFilter startFilter, RangeFilterType startType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
-			// Find the keys that fall within this range (inclusively).
-			var keys = await index.RangeFromFilterAsync(tx, start, startType, token).ConfigureAwait(false);
+			// Find the keys from the start value (inclusively or exclusively) to the end.
+			var keys = await index.RangeFromFilterAsync(tx, startFilter, startType, token).ConfigureAwait(false);
 
 			// Get the rows that match this filter.
 			return await GetAllAsync(tx, keys, timeout, token).ConfigureAwait(false);
 		}
 
-		public async Task<IEnumerable<TKey>> RangeFilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter start, RangeFilterType startType, TFilter end, RangeFilterType endType, TimeSpan timeout, CancellationToken token)
+		public Task<IEnumerable<TKey>> RangeFilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter startFilter, RangeFilterType startType, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
 			// Find the keys that fall within this range (inclusively).
-			return await index.RangeFilterAsync(tx, start, startType, end, endType, token).ConfigureAwait(false);
+			return index.RangeFilterAsync(tx, startFilter, startType, endFilter, endType, token);
 		}
 
-		public async Task<IEnumerable<TKey>> RangeToFilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter end, RangeFilterType endType, TimeSpan timeout, CancellationToken token)
+		public Task<IEnumerable<TKey>> RangeToFilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
-			// Find the keys that fall within this range (inclusively).
-			return await index.RangeToFilterAsync(tx, end, endType, token).ConfigureAwait(false);
+			// Find the keys from the start to the end value (inclusively or exclusively).
+			return index.RangeToFilterAsync(tx, endFilter, endType, token);
 		}
 
-		public async Task<IEnumerable<TKey>> RangeFromFilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter start, RangeFilterType startType, TimeSpan timeout, CancellationToken token)
+		public Task<IEnumerable<TKey>> RangeFromFilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter startFilter, RangeFilterType startType, TimeSpan timeout, CancellationToken token)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
-			// Find the keys that fall within this range (inclusively).
-			return await index.RangeFromFilterAsync(tx, start, startType, token).ConfigureAwait(false);
+			// Find the keys from the start value (inclusively or exclusively) to the end.
+			return index.RangeFromFilterAsync(tx, startFilter, startType, token);
 		}
 
-		public async Task<IEnumerable<TKey>> FilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter filter, TimeSpan timeout, CancellationToken token)
+		public Task<IEnumerable<TKey>> FilterKeysOnlyAsync<TFilter>(ITransaction tx, string indexName, TFilter filter, TimeSpan timeout, CancellationToken token)
 			where TFilter : IComparable<TFilter>, IEquatable<TFilter>
 		{
 			// Find the index.
 			var index = GetFilterableIndex<TFilter>(indexName);
 
 			// Find the keys that match this filter.
-			return await index.FilterAsync(tx, filter, timeout, token).ConfigureAwait(false);
+			return index.FilterAsync(tx, filter, timeout, token);
 		}
 	}
 }
