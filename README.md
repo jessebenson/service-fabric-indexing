@@ -71,7 +71,7 @@ public class MyService : StatefulService
             var results = await dictionary.FilterAsync(tx, "name", "Red Polo");
             // 'results' contains the "red-polo" product.
             
-            results = await dictionary.RangeFilterAsync(tx, "price", 20, 30);
+            results = await dictionary.RangeFilterAsync(tx, "price", 20, RangeFilterType.Inclusive, 30, RangeFilterType.Inclusive);
             // 'results' contains the "red-polo" and "blue-skirt" products.
             
             results = await dictionary.SearchAsync(tx, "red");
@@ -111,7 +111,7 @@ new FilterableIndex<string, Person, int>("age", (string key, Person value) => va
 IEnumerable<KeyValuePair<string, Person>> results = await dictionary.FilterAsync(tx, "age", 30);
 
 // usage (range filter):
-IEnumerable<KeyValuePair<string, Person>> results = await dictionary.RangeFilterAsync(tx, "age", 20, 30);
+IEnumerable<KeyValuePair<string, Person>> results = await dictionary.RangeFilterAsync(tx, "age", 20, RangeFilterType.Inclusive, 30, RangeFilterType.Inclusive);
 ```
 
 ## SearchableIndex
