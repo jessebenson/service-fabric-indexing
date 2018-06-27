@@ -9,11 +9,11 @@ using Microsoft.ServiceFabric.Data.Collections;
 namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 {
 
-    public enum RangeFilterType
-    {
-        Inclusive,
-        Exclusive
-    };
+	public enum RangeFilterType
+	{
+		Inclusive,
+		Exclusive
+	};
 
 	/// <summary>
 	/// Defintion for a reverse index that supports filtering for exact matches on a property.
@@ -38,24 +38,24 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 			Filter = filter ?? throw new ArgumentNullException(nameof(filter));
 		}
 
-        // Use this constructor to garauntee query-ability
-        public static FilterableIndex<TKey, TValue, TFilter> CreateQueryableInstance(string valuePropertyName)
-        {
-            string name = valuePropertyName ?? throw new ArgumentNullException(nameof(valuePropertyName));
-            if (typeof(TValue).GetProperty(valuePropertyName) == null)
-            {
-                throw new ArgumentException("Dictionary value type: " + typeof(TValue).ToString() + " does not have property: " + valuePropertyName + ", note that nestled types (e.g. Value/Name/FirstName) are not currently supported");
-            }
+		// Use this constructor to garauntee query-ability
+		public static FilterableIndex<TKey, TValue, TFilter> CreateQueryableInstance(string valuePropertyName)
+		{
+			string name = valuePropertyName ?? throw new ArgumentNullException(nameof(valuePropertyName));
+			if (typeof(TValue).GetProperty(valuePropertyName) == null)
+			{
+				throw new ArgumentException($"Dictionary value type: {typeof(TValue)} does not have property '{valuePropertyName}'. Note that nested types (e.g. Value/Name/FirstName) are not currently supported.");
+			}
 
-            // Construct the lambda we expect the index we are looking for to have
-            // (k, v) => v.PropertyName
-            ParameterExpression keyParameterExpression = Expression.Parameter(typeof(TKey), "k");
-            ParameterExpression valueParameterExpression = Expression.Parameter(typeof(TValue), "v");
-            MemberExpression propertyMemberExpression = Expression.Property(valueParameterExpression, typeof(TValue).GetProperty(valuePropertyName));
-            LambdaExpression filterLambda = Expression.Lambda(propertyMemberExpression, new ParameterExpression[] { keyParameterExpression, valueParameterExpression });
+			// Construct the lambda we expect the index we are looking for to have
+			// (k, v) => v.PropertyName
+			ParameterExpression keyParameterExpression = Expression.Parameter(typeof(TKey), "k");
+			ParameterExpression valueParameterExpression = Expression.Parameter(typeof(TValue), "v");
+			MemberExpression propertyMemberExpression = Expression.Property(valueParameterExpression, typeof(TValue).GetProperty(valuePropertyName));
+			LambdaExpression filterLambda = Expression.Lambda(propertyMemberExpression, new ParameterExpression[] { keyParameterExpression, valueParameterExpression });
 
-            return new FilterableIndex<TKey, TValue, TFilter>(name, (Func<TKey, TValue, TFilter>)filterLambda.Compile());
-        }
+			return new FilterableIndex<TKey, TValue, TFilter>(name, (Func<TKey, TValue, TFilter>)filterLambda.Compile());
+		}
 
 		/// <summary>
 		/// Retrieves all keys that match the given filter value, or an empty array if there are no matches.
@@ -63,9 +63,9 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		public async Task<IEnumerable<TKey>> FilterAsync(ITransaction tx, TFilter filter, TimeSpan timeout, CancellationToken token)
 		{
 			var result = await _index.TryGetValueAsync(tx, filter, timeout, token).ConfigureAwait(false);
-			TKey[] results =  result.HasValue ? result.Value : new TKey[] { };
-            Array.Sort(results);
-            return results.AsEnumerable();
+			TKey[] results = result.HasValue ? result.Value : new TKey[0];
+			Array.Sort(results);
+			return results;
 		}
 
 		/// <summary>
@@ -73,83 +73,83 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// </summary>
 		public Task<IEnumerable<TKey>> RangeFilterAsync(ITransaction tx, TFilter start, RangeFilterType startType, TFilter end, RangeFilterType endType, CancellationToken token)
 		{
-            if (startType == RangeFilterType.Inclusive && endType == RangeFilterType.Inclusive)
-            {
-                return RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) <= 0, token);
-            }
-            else if (startType == RangeFilterType.Exclusive && endType == RangeFilterType.Inclusive)
-            {
-                return RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) <= 0, token);
-            }
-            else if (startType == RangeFilterType.Inclusive && endType == RangeFilterType.Exclusive)
-            {
-                return RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) < 0, token);
-            }
-            else if (startType == RangeFilterType.Exclusive && endType == RangeFilterType.Exclusive)
-            {
-                return RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) < 0, token);
-            }
-            else
-            {
-                throw new NotSupportedException("Impossible state, must be INCLUSIVE / EXLUSIVE matrix");
-            }
-        }
+			if (startType == RangeFilterType.Inclusive && endType == RangeFilterType.Inclusive)
+			{
+				return RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) <= 0, token);
+			}
+			else if (startType == RangeFilterType.Exclusive && endType == RangeFilterType.Inclusive)
+			{
+				return RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) <= 0, token);
+			}
+			else if (startType == RangeFilterType.Inclusive && endType == RangeFilterType.Exclusive)
+			{
+				return RangeFilterHelper(tx, f => start.CompareTo(f) <= 0 && f.CompareTo(end) < 0, token);
+			}
+			else if (startType == RangeFilterType.Exclusive && endType == RangeFilterType.Exclusive)
+			{
+				return RangeFilterHelper(tx, f => start.CompareTo(f) < 0 && f.CompareTo(end) < 0, token);
+			}
+			else
+			{
+				throw new NotSupportedException("Impossible state, must be Inclusive / Exclusive matrix");
+			}
+		}
 
-        public Task<IEnumerable<TKey>> RangeToFilterAsync(ITransaction tx, TFilter end, RangeFilterType endType, CancellationToken token)
-        {
-            if (endType == RangeFilterType.Inclusive)
-            {
-                return RangeFilterHelper(tx, f => f.CompareTo(end) <= 0, token);
-            }
-            else if (endType == RangeFilterType.Exclusive)
-            {
-                return RangeFilterHelper(tx, f => f.CompareTo(end) < 0, token);
-            }
-            else
-            {
-                throw new NotSupportedException("Impossible state, must be either INCLUSIVE or EXLUSIVE");
-            }
-        }
+		public Task<IEnumerable<TKey>> RangeToFilterAsync(ITransaction tx, TFilter end, RangeFilterType endType, CancellationToken token)
+		{
+			if (endType == RangeFilterType.Inclusive)
+			{
+				return RangeFilterHelper(tx, f => f.CompareTo(end) <= 0, token);
+			}
+			else if (endType == RangeFilterType.Exclusive)
+			{
+				return RangeFilterHelper(tx, f => f.CompareTo(end) < 0, token);
+			}
+			else
+			{
+				throw new NotSupportedException("Impossible state, must be either Inclusive or Exclusive");
+			}
+		}
 
-        public Task<IEnumerable<TKey>> RangeFromFilterAsync(ITransaction tx, TFilter start, RangeFilterType startType, CancellationToken token)
-        {
-            if (startType == RangeFilterType.Inclusive)
-            {
-                return RangeFilterHelper(tx, f => start.CompareTo(f) <= 0, token);
-            }
-            else if (startType == RangeFilterType.Exclusive)
-            {
-                return RangeFilterHelper(tx, f => start.CompareTo(f) < 0, token);
-            }
-            else
-            {
-                throw new NotSupportedException("Impossible state, must be either INCLUSIVE or EXLUSIVE");
-            }
-        }
+		public Task<IEnumerable<TKey>> RangeFromFilterAsync(ITransaction tx, TFilter start, RangeFilterType startType, CancellationToken token)
+		{
+			if (startType == RangeFilterType.Inclusive)
+			{
+				return RangeFilterHelper(tx, f => start.CompareTo(f) <= 0, token);
+			}
+			else if (startType == RangeFilterType.Exclusive)
+			{
+				return RangeFilterHelper(tx, f => start.CompareTo(f) < 0, token);
+			}
+			else
+			{
+				throw new NotSupportedException("Impossible state, must be either Inclusive or Exclusive");
+			}
+		}
 
-        private async Task<IEnumerable<TKey>> RangeFilterHelper(ITransaction tx, Func<TFilter, bool> filter, CancellationToken token)
-        {
-            // Since filters uses exact matches, each key should appear exactly once in the index.
-            var keys = new List<TKey>();
+		private async Task<IEnumerable<TKey>> RangeFilterHelper(ITransaction tx, Func<TFilter, bool> filter, CancellationToken token)
+		{
+			// Since filters uses exact matches, each key should appear exactly once in the index.
+			var keys = new List<TKey>();
 
-            // Include all values that fall within the range [start, end] inclusively.
-            var enumerable = await _index.CreateEnumerableAsync(tx, filter, EnumerationMode.Ordered).ConfigureAwait(false);
+			// Include all values that fall within the range [start, end] inclusively.
+			var enumerable = await _index.CreateEnumerableAsync(tx, filter, EnumerationMode.Ordered).ConfigureAwait(false);
 
-            // Enumerate the index.
-            var enumerator = enumerable.GetAsyncEnumerator();
-            while (await enumerator.MoveNextAsync(token).ConfigureAwait(false))
-            {
-                keys.AddRange(enumerator.Current.Value);
-            }
+			// Enumerate the index.
+			var enumerator = enumerable.GetAsyncEnumerator();
+			while (await enumerator.MoveNextAsync(token).ConfigureAwait(false))
+			{
+				keys.AddRange(enumerator.Current.Value);
+			}
 
-            keys.Sort();
-            return keys;
-        }
+			keys.Sort();
+			return keys;
+		}
 
-        /// <summary>
-        /// Create an async enumerable over the set of distinct filter values in this index.
-        /// </summary>
-        public Task<IAsyncEnumerable<TFilter>> CreateEnumerableAsync(ITransaction tx, EnumerationMode enumerationMode, TimeSpan timeout, CancellationToken token)
+		/// <summary>
+		/// Create an async enumerable over the set of distinct filter values in this index.
+		/// </summary>
+		public Task<IAsyncEnumerable<TFilter>> CreateEnumerableAsync(ITransaction tx, EnumerationMode enumerationMode, TimeSpan timeout, CancellationToken token)
 		{
 			return _index.CreateKeyEnumerableAsync(tx, enumerationMode, timeout, token);
 		}
