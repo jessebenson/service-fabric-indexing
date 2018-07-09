@@ -59,7 +59,7 @@ namespace Microsoft.ServiceFabric.Data.Mocks
 		{
 			using (var tx = CreateTransaction())
 			{
-				var result = await GetOrAddAsync<T>(name, timeout).ConfigureAwait(false);
+				var result = await GetOrAddAsync<T>(tx, name, timeout).ConfigureAwait(false);
 				await tx.CommitAsync().ConfigureAwait(false);
 				return result;
 			}
