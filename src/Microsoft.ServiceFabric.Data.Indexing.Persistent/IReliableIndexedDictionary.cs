@@ -23,7 +23,7 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// </summary>
 		Task<IAsyncEnumerable<TFilter>> CreateIndexEnumerableAsync<TFilter>(ITransaction tx, string index) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
 
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> GetAllAsync(ITransaction tx, IEnumerable<TKey> keys, TimeSpan timeout, CancellationToken token);
+		IAsyncEnumerable<KeyValuePair<TKey, TValue>> GetAllAsync(ITransaction tx, IEnumerable<TKey> keys, TimeSpan timeout, CancellationToken token);
 
 
 		/// <summary>
@@ -43,63 +43,63 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent
 		/// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
 
 		/// <summary>
 		/// Retrieve all keys and values from the reliable collection that match the given filter using the specified index name.
 		/// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> FilterAsync<TFilter>(ITransaction tx, string index, TFilter filter, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
 
 		/// <summary>
 		/// Retrieve all keys and values from the reliable collection that fall within the given range (inclusively or exclusively) using the specified index name.
 		/// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter startFilter, RangeFilterType startType, TFilter endFilter, RangeFilterType endType) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter startFilter, RangeFilterType startType, TFilter endFilter, RangeFilterType endType) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
 
 		/// <summary>
 		/// Retrieve all keys and values from the reliable collection that fall within the given range (inclusively or exclusively) using the specified index name.
 		/// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter startFilter, RangeFilterType startType, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> RangeFilterAsync<TFilter>(ITransaction tx, string index, TFilter startFilter, RangeFilterType startType, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
 
 		/// <summary>
 		/// Retrieve all keys and values from the reliable collection from the beginning to the end value (inclusively or exclusively) using the specified index name.
 		/// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeToFilterAsync<TFilter>(ITransaction tx, string index, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> RangeToFilterAsync<TFilter>(ITransaction tx, string index, TFilter endFilter, RangeFilterType endType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
 
 		/// <summary>
 		/// Retrieve all keys and values from the reliable collection from the beginning value (inclusively or exclusively) to the end using the specified index name.
 		/// The index is defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// The type <typeparamref name="TFilter"/> must match the type of the <see cref="FilterableIndex{TKey, TValue, TFilter}"/>.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> RangeFromFilterAsync<TFilter>(ITransaction tx, string index, TFilter startFilter, RangeFilterType startType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> RangeFromFilterAsync<TFilter>(ITransaction tx, string index, TFilter startFilter, RangeFilterType startType, TimeSpan timeout, CancellationToken token) where TFilter : IComparable<TFilter>, IEquatable<TFilter>;
 
 		/// <summary>
 		/// Performs a full-text search over the reliable collection.  Returns all keys and values from the reliable
 		/// collection that match the given search using all searchable index definitions.
 		/// The indexes are defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search);
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search);
 
 		/// <summary>
 		/// Performs a full-text search over the reliable collection.  Returns all keys and values from the reliable
 		/// collection that match the given search using all searchable index definitions.
 		/// The indexes are defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, int count);
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, int count);
 
 		/// <summary>
 		/// Performs a full-text search over the reliable collection.  Returns all keys and values from the reliable
 		/// collection that match the given search using all searchable index definitions.
 		/// The indexes are defined in the IReliableStateManager.GetOrAddIndexedAsync() call that retrieves this reliable collection.
 		/// </summary>
-		Task<IEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, int count, TimeSpan timeout, CancellationToken token);
+		Task<IAsyncEnumerable<KeyValuePair<TKey, TValue>>> SearchAsync(ITransaction tx, string search, int count, TimeSpan timeout, CancellationToken token);
 
 		/// <summary>
 		/// Retrieve all keys from the reliable collection that match the given filter.

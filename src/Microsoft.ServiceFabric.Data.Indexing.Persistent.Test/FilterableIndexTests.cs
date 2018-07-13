@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Collections;
@@ -31,14 +32,16 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Search the index for this person's name.  This should return the person we added above.
-				var result = await dictionary.FilterAsync(tx, "name", "John");
+				var temp = await dictionary.FilterAsync(tx, "name", "John");
+                var result = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
 				Assert.AreEqual(1, result.Count());
 				Assert.AreEqual(john.Id, result.First().Key);
 				Assert.AreSame(john, result.First().Value);
 
 				// Search the index for the wrong name.  This should not return any results.
-				var nobody = await dictionary.FilterAsync(tx, "name", "Jane");
-				Assert.AreEqual(0, nobody.Count());
+				temp = await dictionary.FilterAsync(tx, "name", "Jane");
+                var nobody = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(0, nobody.Count());
 
 				await tx.CommitAsync();
 			}
@@ -65,8 +68,9 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Search the index for this person's name.  This should not return the person above.
-				var result = await dictionary.FilterAsync(tx, "name", "John");
-				Assert.AreEqual(0, result.Count());
+				var temp = await dictionary.FilterAsync(tx, "name", "John");
+                var result = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(0, result.Count());
 
 				await tx.CommitAsync();
 			}
@@ -93,12 +97,14 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Search the index for John.  This should not return anything.
-				var result = await dictionary.FilterAsync(tx, "name", "John");
-				Assert.AreEqual(0, result.Count());
+				var temp = await dictionary.FilterAsync(tx, "name", "John");
+                var result = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(0, result.Count());
 
 				// Search the index for Jane.  This should return the Jane person.
-				result = await dictionary.FilterAsync(tx, "name", "Jane");
-				Assert.AreEqual(1, result.Count());
+				temp = await dictionary.FilterAsync(tx, "name", "Jane");
+                result = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(1, result.Count());
 				CollectionAssert.Contains(result.Select(x => x.Value).ToArray(), jane);
 
 				await tx.CommitAsync();
@@ -125,14 +131,16 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Search the index for this person's name.  This should return the people we added above.
-				var results = await dictionary.FilterAsync(tx, "name", "John");
-				Assert.AreEqual(2, results.Count());
+				var temp = await dictionary.FilterAsync(tx, "name", "John");
+                var results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(2, results.Count());
 				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john1);
 				CollectionAssert.Contains(results.Select(x => x.Value).ToArray(), john2);
 
 				// Search the index for the wrong name.  This should not return any results.
-				var nobody = await dictionary.FilterAsync(tx, "name", "Jane");
-				Assert.AreEqual(0, nobody.Count());
+				temp = await dictionary.FilterAsync(tx, "name", "Jane");
+                var nobody = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(0, nobody.Count());
 
 				await tx.CommitAsync();
 			}
@@ -161,41 +169,49 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Range filter - range too low
-				var results = await dictionary.RangeFilterAsync(tx, "age", 0, RangeFilterType.Inclusive, 10, RangeFilterType.Inclusive);
-				Assert.AreEqual(0, results.Count());
+				var temp = await dictionary.RangeFilterAsync(tx, "age", 0, RangeFilterType.Inclusive, 10, RangeFilterType.Inclusive);
+                var results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(0, results.Count());
 
 				// Range filter - range too high.
-				results = await dictionary.RangeFilterAsync(tx, "age", 70, RangeFilterType.Inclusive, 100, RangeFilterType.Inclusive);
-				Assert.AreEqual(0, results.Count());
+				temp = await dictionary.RangeFilterAsync(tx, "age", 70, RangeFilterType.Inclusive, 100, RangeFilterType.Inclusive);
+                results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(0, results.Count());
 
 				// Range filter - fully included (order is important).
-				results = await dictionary.RangeFilterAsync(tx, "age", 0, RangeFilterType.Inclusive, 100, RangeFilterType.Inclusive);
-				Assert.AreEqual(3, results.Count());
+				temp = await dictionary.RangeFilterAsync(tx, "age", 0, RangeFilterType.Inclusive, 100, RangeFilterType.Inclusive);
+                results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(3, results.Count());
 				CollectionAssert.AreEqual(new[] { jane, john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 40, RangeFilterType.Inclusive);
-				Assert.AreEqual(2, results.Count());
+				temp = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 40, RangeFilterType.Inclusive);
+                results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(2, results.Count());
 				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, start overlaps.
-				results = await dictionary.RangeFilterAsync(tx, "age", 32, RangeFilterType.Inclusive, 40, RangeFilterType.Inclusive);
-				Assert.AreEqual(2, results.Count());
+				temp = await dictionary.RangeFilterAsync(tx, "age", 32, RangeFilterType.Inclusive, 40, RangeFilterType.Inclusive);
+                results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(2, results.Count());
 				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, end overlaps.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 35, RangeFilterType.Inclusive);
-				Assert.AreEqual(2, results.Count());
+				temp = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 35, RangeFilterType.Inclusive);
+                results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(2, results.Count());
 				CollectionAssert.AreEqual(new[] { john, mary }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, in the middle.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 33, RangeFilterType.Inclusive);
-				Assert.AreEqual(1, results.Count());
+				temp = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Inclusive, 33, RangeFilterType.Inclusive);
+                results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(1, results.Count());
 				CollectionAssert.AreEqual(new[] { john }, results.Select(x => x.Value).ToArray());
 
 				// Range filter - partially included, exclusive.
-				results = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Exclusive, 35, RangeFilterType.Exclusive);
-				Assert.AreEqual(1, results.Count());
+				temp = await dictionary.RangeFilterAsync(tx, "age", 30, RangeFilterType.Exclusive, 35, RangeFilterType.Exclusive);
+                results = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
+                Assert.AreEqual(1, results.Count());
 				var singleActual = results.Select(x => x.Value).First();
 				Assert.IsTrue(singleActual == john);
 

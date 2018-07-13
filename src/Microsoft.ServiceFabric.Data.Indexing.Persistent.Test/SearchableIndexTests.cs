@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Indexing.Persistent.Test.Models;
@@ -31,35 +32,35 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Search by first names.  This should return the respective people we added above.
-				var johnSearch = await dictionary.SearchAsync(tx, "John");
-				Assert.AreEqual(1, johnSearch.Count());
+				var johnSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "John").Result.ToEnumerable());
+                Assert.AreEqual(1, johnSearch.Count());
 				Assert.AreEqual(john.Id, johnSearch.First().Key);
 				Assert.AreSame(john, johnSearch.First().Value);
 
-				var janeSearch = await dictionary.SearchAsync(tx, "Jane");
-				Assert.AreEqual(1, janeSearch.Count());
+				var janeSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "Jane").Result.ToEnumerable());
+                Assert.AreEqual(1, janeSearch.Count());
 				Assert.AreEqual(jane.Id, janeSearch.First().Key);
 				Assert.AreSame(jane, janeSearch.First().Value);
 
 				// Search the index for the last name.  This should return both.
-				var doeSearch = await dictionary.SearchAsync(tx, "Doe");
-				Assert.AreEqual(2, doeSearch.Count());
+				var doeSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "Doe").Result.ToEnumerable());
+                Assert.AreEqual(2, doeSearch.Count());
 				CollectionAssert.Contains(doeSearch.Select(x => x.Value).ToArray(), john);
 				CollectionAssert.Contains(doeSearch.Select(x => x.Value).ToArray(), jane);
 
 				// Search the index for the last name as lower-case.  This should also return both.
-				doeSearch = await dictionary.SearchAsync(tx, "doe");
-				Assert.AreEqual(2, doeSearch.Count());
+				doeSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "doe").Result.ToEnumerable());
+                Assert.AreEqual(2, doeSearch.Count());
 				CollectionAssert.Contains(doeSearch.Select(x => x.Value).ToArray(), john);
 				CollectionAssert.Contains(doeSearch.Select(x => x.Value).ToArray(), jane);
 
 				// Search the index for a non-existent string.
-				var nobody = await dictionary.SearchAsync(tx, "unknown");
-				Assert.AreEqual(0, nobody.Count());
+				var nobody = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "unknown").Result.ToEnumerable());
+                Assert.AreEqual(0, nobody.Count());
 
 				// Search the index for the last name as lower-case with a count limit.  This should return one.
-				doeSearch = await dictionary.SearchAsync(tx, "doe", count: 1);
-				Assert.AreEqual(1, doeSearch.Count());
+				doeSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "doe", count: 1).Result.ToEnumerable());
+                Assert.AreEqual(1, doeSearch.Count());
 				var singleActual = doeSearch.Select(x => x.Value).First();
 				Assert.IsTrue(singleActual == john || singleActual == jane);
 
@@ -89,24 +90,24 @@ namespace Microsoft.ServiceFabric.Data.Indexing.Persistent.Test
 			using (var tx = stateManager.CreateTransaction())
 			{
 				// Search for 'Johnson' should return both people (Mark for name match, and Jane for address match).
-				var johnsonSearch = await dictionary.SearchAsync(tx, "Johnson");
-				Assert.AreEqual(2, johnsonSearch.Count());
+				var johnsonSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "Johnson").Result.ToEnumerable());
+                Assert.AreEqual(2, johnsonSearch.Count());
 				CollectionAssert.Contains(johnsonSearch.Select(x => x.Value).ToArray(), mark);
 				CollectionAssert.Contains(johnsonSearch.Select(x => x.Value).ToArray(), jane);
 
 				// Search for 'Main' should only return Mark (address match).
-				var mainSearch = await dictionary.SearchAsync(tx, "Main");
-				Assert.AreEqual(1, mainSearch.Count());
+				var mainSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "Main").Result.ToEnumerable());
+                Assert.AreEqual(1, mainSearch.Count());
 				CollectionAssert.Contains(mainSearch.Select(x => x.Value).ToArray(), mark);
 
 				// Search for 'Mark and Jane' should return both people ('and' word should be ignored).
-				var markJaneSearch = await dictionary.SearchAsync(tx, "Mark and Jane");
-				Assert.AreEqual(2, markJaneSearch.Count());
+				var markJaneSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "Mark and Jane").Result.ToEnumerable());
+                Assert.AreEqual(2, markJaneSearch.Count());
 				CollectionAssert.Contains(markJaneSearch.Select(x => x.Value).ToArray(), mark);
 				CollectionAssert.Contains(markJaneSearch.Select(x => x.Value).ToArray(), jane);
 
 				// Search for 'Street' should not return anybody.
-				var streetSearch = await dictionary.SearchAsync(tx, "Street");
+				var streetSearch = new List<KeyValuePair<Guid, Person>>(await dictionary.SearchAsync(tx, "Street").Result.ToEnumerable());
 				Assert.AreEqual(0, streetSearch.Count());
 
 				await tx.CommitAsync();
