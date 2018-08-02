@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>3.1.283.0</Version>
+    <AssemblyVersion>3.1.283.0</AssemblyVersion>
+    <FileVersion>3.1.283.0</FileVersion>
+    <Description>Index support for Service Fabric stateful services and reliable collections.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>Azure, ServiceFabric, Microsoft, Fabric, Data Explorer, Query, Index, Indexing</PackageTags>
+    <PackageProjectUrl>https://github.com/jessebenson/service-fabric-indexing</PackageProjectUrl>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ServiceFabric" Version="6.2.283" />
+    <PackageReference Include="Microsoft.ServiceFabric.Data" Version="3.1.283" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.1.283" />
+  </ItemGroup>
+
+</Project>
