@@ -1,4 +1,4 @@
-# Microsoft.ServiceFabric.Data.Indexing
+# ServiceFabric.Extensions.Data.Indexing
 
 Service Fabric reliable collections that support automatic reverse indexing via filters and full-text search.
 

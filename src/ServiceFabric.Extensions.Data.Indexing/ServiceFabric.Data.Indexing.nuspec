@@ -1,0 +1,18 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ServiceFabric.Data.Indexing</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>jessebenson</authors>
+    <owners>jessebenson</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/jessebenson/service-fabric-indexing</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Index support for Service Fabric stateful services and reliable collections.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>Microsoft ServiceFabric Index Indexing Query Queryable Data Explorer</tags>
+  </metadata>
+</package>
