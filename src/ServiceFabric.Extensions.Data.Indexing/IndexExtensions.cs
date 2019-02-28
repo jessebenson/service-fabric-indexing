@@ -10,7 +10,7 @@ namespace ServiceFabric.Extensions.Data.Indexing.Persistent
 	/// </summary>
 	public static class IndexExtensions
 	{
-		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(4);
+		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
 		/// <summary>
 		/// Get an <see cref="IReliableIndexedDictionary{TKey, TValue}"/> with the given name if it exists, or creates one with its indexes and returns it if it doesn't already exist.
