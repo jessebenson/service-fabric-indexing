@@ -1,4 +1,6 @@
-﻿namespace StoreService
+﻿using System;
+
+namespace StoreService
 {
 	public class Product
 	{

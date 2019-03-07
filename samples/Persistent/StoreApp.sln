@@ -7,7 +7,7 @@ Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "StoreApp", "StoreApp\StoreA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreService", "StoreService\StoreService.csproj", "{3669DAB7-4FA6-4565-B3DA-33C2F1266CF5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.ServiceFabric.Data.Indexing.Persistent", "..\..\src\Microsoft.ServiceFabric.Data.Indexing.Persistent\Microsoft.ServiceFabric.Data.Indexing.Persistent.csproj", "{505134BE-CF41-4B0F-97A4-BD60EDB9C242}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceFabric.Extensions.Data.Indexing", "..\..\src\ServiceFabric.Extensions.Data.Indexing\ServiceFabric.Extensions.Data.Indexing.csproj", "{A63157CA-121B-46A0-9B95-1D67C1320258}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +25,10 @@ Global
 		{3669DAB7-4FA6-4565-B3DA-33C2F1266CF5}.Debug|x64.Build.0 = Debug|x64
 		{3669DAB7-4FA6-4565-B3DA-33C2F1266CF5}.Release|x64.ActiveCfg = Release|x64
 		{3669DAB7-4FA6-4565-B3DA-33C2F1266CF5}.Release|x64.Build.0 = Release|x64
-		{505134BE-CF41-4B0F-97A4-BD60EDB9C242}.Debug|x64.ActiveCfg = Debug|x64
-		{505134BE-CF41-4B0F-97A4-BD60EDB9C242}.Debug|x64.Build.0 = Debug|x64
-		{505134BE-CF41-4B0F-97A4-BD60EDB9C242}.Release|x64.ActiveCfg = Release|x64
-		{505134BE-CF41-4B0F-97A4-BD60EDB9C242}.Release|x64.Build.0 = Release|x64
+		{A63157CA-121B-46A0-9B95-1D67C1320258}.Debug|x64.ActiveCfg = Debug|x64
+		{A63157CA-121B-46A0-9B95-1D67C1320258}.Debug|x64.Build.0 = Debug|x64
+		{A63157CA-121B-46A0-9B95-1D67C1320258}.Release|x64.ActiveCfg = Release|x64
+		{A63157CA-121B-46A0-9B95-1D67C1320258}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
