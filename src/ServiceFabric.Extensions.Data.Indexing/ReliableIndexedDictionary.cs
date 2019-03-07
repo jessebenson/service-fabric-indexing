@@ -12,7 +12,7 @@ namespace ServiceFabric.Extensions.Data.Indexing.Persistent
 	internal class ReliableIndexedDictionary<TKey, TValue> : IReliableIndexedDictionary<TKey, TValue>
 		where TKey : IComparable<TKey>, IEquatable<TKey>
 	{
-		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(4);
+		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
 		private readonly IReliableDictionary2<TKey, TValue> _dictionary;
 		private readonly IIndexDefinition<TKey, TValue>[] _indexes;
