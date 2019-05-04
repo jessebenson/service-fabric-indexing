@@ -43,10 +43,10 @@ namespace ServiceFabric.Extensions.Data.Indexing.Persistent.Test
                 // Search the index for the wrong name.  This should not return any results.
                 temp = await dictionary.FilterAsync<string>(tx, "name", null);
                 var nobody = new List<KeyValuePair<Guid, Person>>(await temp.ToEnumerable());
-                Assert.AreEqual(1, nobody.Count());
-                Assert.AreEqual(noname.Id, result.First().Key);
-                Assert.AreEqual(-1, result.First().Value.Age);
 
+                Assert.AreEqual(1, nobody.Count());
+                Assert.AreEqual(noname.Id, nobody.First().Key);
+                Assert.AreEqual(-1, nobody.First().Value.Age);
 
                 await tx.CommitAsync();
             }
