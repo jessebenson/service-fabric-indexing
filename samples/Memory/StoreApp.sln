@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "StoreApp", "StoreApp\StoreApp.sfproj", "{26F634BB-CE32-4C63-B0C2-A9D917983E0E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreService", "StoreService\StoreService.csproj", "{AA57DD89-2113-4773-8BC9-7FA92EC2E3B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.ServiceFabric.Data.Indexing.Memory", "..\..\src\Microsoft.ServiceFabric.Data.Indexing.Memory\Microsoft.ServiceFabric.Data.Indexing.Memory.csproj", "{AC93E4DE-F04D-4571-9FB7-43D8BB267A7D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceFabric.Extensions.Data.Indexing.Memory", "..\..\src\ServiceFabric.Extensions.Data.Indexing.Memory\ServiceFabric.Extensions.Data.Indexing.Memory.csproj", "{AC93E4DE-F04D-4571-9FB7-43D8BB267A7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
