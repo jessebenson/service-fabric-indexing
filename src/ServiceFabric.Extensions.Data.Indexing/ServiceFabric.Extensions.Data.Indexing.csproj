@@ -10,7 +10,15 @@
     <PackageTags>Azure, ServiceFabric, Microsoft, Fabric, Data Explorer, Query, Index, Indexing</PackageTags>
     <PackageProjectUrl>https://github.com/jessebenson/service-fabric-indexing</PackageProjectUrl>
     <Platforms>x64</Platforms>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ServiceFabric" Version="6.4.638" />
